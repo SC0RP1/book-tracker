@@ -3,21 +3,21 @@ import os
 from typing import Optional, List
 from models import Book
 
-DATA_FILE = books.json
+DATA_FILE = 'books.json'
 
 def load_books() -> List[Book]:
     if not os.path.exists(DATA_FILE):
         return []
 
     try:
-        with open(DATA_FILE, "r") as f:
+        with open(DATA_FILE, "r", encoding='utf-8') as f:
             data = json.load(f)
             return [Book.from_dict(book) for book in data]
     except (json.JSONDecodeError, KeyError):
         return []
 
 def save_books(books: List[Book]) -> None:
-    with open(DATA_FILE, "w") as f:
+    with open(DATA_FILE, "w", encoding='utf-8') as f:
         json.dump([book.to_dict() for book in books], f, ensure_ascii=False, indent=2)
 
 def add_book(book: Book) -> bool:
@@ -31,12 +31,14 @@ def add_book(book: Book) -> bool:
     save_books(books)
     return True
 
-def delete_book(book: Book) -> bool:
+def delete_book(author: str, title: str) -> bool:
     books = load_books()
     initial_count = len(books)
 
-    books = [book for book in books if not (book.author.lower() == book.author.lower() and
-             existing_book.title.lower() == book.title.lower())]
+    # Оставляем только те книги, которые НЕ совпадают с удаляемой
+    books = [book for book in books
+             if not (book.author.lower() == author.lower() and
+                    book.title.lower() == title.lower())]
 
     if len(books) < initial_count:
         save_books(books)

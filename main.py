@@ -1,62 +1,87 @@
 from datetime import datetime
-
-from matplotlib.pyplot import title
-
 from models import Book
 from storage import add_book, get_all_books, delete_book, find_book
 from stats import calculate_average_rating, get_statistics_by_author
 
+
 def get_valid_rating():
     while True:
         try:
-            rating = int(input("Введите оценка (1-5): "))
+            rating = int(input("Введите оценку (1-5): "))
             if 1 <= rating <= 5:
                 return rating
             else:
-                print('Оценка дожна быть от 1 до 5')
+                print('Оценка должна быть от 1 до 5')
         except ValueError:
             print("Пожалуйста, введите целое число!")
 
+
 def get_valid_date():
     while True:
-        date_str = input("Введите дату прочтения (ДД-ММ-ГГГГ)")
+        date_str = input("Введите дату прочтения (ГГГГ-ММ-ДД): ")
         try:
-            datetime.strptime(date_str, "%d-%m-%y")
+            datetime.strptime(date_str, "%Y-%m-%d")
             return date_str
         except ValueError:
-            print("Неверный формат даты! Используйте ДД-ММ-ГГГГ")
+            print("Неверный формат даты! Используйте ГГГГ-ММ-ДД")
 
-def get_book_menu():
-    print("\n---Список всех книг---")
+
+def add_book_menu():
+    print("\n--- Добавление новой книги ---")
+    author = input("Введите автора: ").strip()
+    title = input("Введите название: ").strip()
+
+    if not author or not title:
+        print("Автор и название не могут быть пустыми!")
+        return
+
+    rating = get_valid_rating()
+    date_read = get_valid_date()
+
+    book = Book(author, title, rating, date_read)
+
+    if add_book(book):
+        print(f"Книга '{title}' успешно добавлена!")
+    else:
+        print(f"Ошибка: Книга '{title}' автора {author} уже существует!")
+
+
+def show_all_books():
+    books = get_all_books()
+
+    print("\n--- Список всех книг ---")
     if not books:
         print("Список книг пуст")
     else:
-        for i, book in enumerate(books,1):
+        for i, book in enumerate(books, 1):
             print(f"{i}. {book}")
+
 
 def show_average_rating():
     books = get_all_books()
     avg = calculate_average_rating(books)
 
-    print("\n---Средняя оценка всех книг---")
+    print("\n--- Средняя оценка всех книг ---")
     if avg == 0:
-        print("Нет данных для оценки")
+        print("Нет книг для оценки")
     else:
         print(f"Средняя оценка: {avg}")
+
 
 def show_author_statistics():
     books = get_all_books()
     stats = get_statistics_by_author(books)
 
-    print("\n---Статистика по авторам---")
+    print("\n--- Статистика по авторам ---")
     if not stats:
         print("Нет книг для статистики")
     else:
         for author, data in stats.items():
             print(f"{author}: {data['count']} книг(а), средняя оценка: {data['average_rating']}")
 
+
 def delete_book_menu():
-    print("\n---Удаление книги---")
+    print("\n--- Удаление книги ---")
     author = input("Введите автора: ").strip()
     title = input("Введите название: ").strip()
 
